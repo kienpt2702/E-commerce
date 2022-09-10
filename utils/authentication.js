@@ -1,5 +1,5 @@
 const passport = require('passport');
-const {User} = require("../models/user.model");
+const {User} = require("../database/models/user.model");
 const jwt = require('jsonwebtoken');
 const {SECRET_KEY} = require("./config.util");
 const LocalStrategy = require('passport-local').Strategy;

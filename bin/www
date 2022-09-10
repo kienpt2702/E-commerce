@@ -8,7 +8,7 @@ var app = require('../app');
 var debug = require('debug')('guana:server');
 var http = require('http');
 const {PORT} = require("../utils/config.util");
-const initMongoDB = require('../utils/mongodb.util');
+const initMongoDB = require('../database/mongodb');
 
 /**
  * Get port from environment and store in Express.

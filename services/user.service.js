@@ -1,4 +1,4 @@
-const {User} = require("../models/user.model");
+const {User} = require("../database/models/user.model");
 const {getToken} = require("../utils/authentication");
 
 const signup = async (req, res, next) => {
