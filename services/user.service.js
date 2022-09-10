@@ -1,5 +1,5 @@
 const {User} = require("../database/models/user.model");
-const {getToken} = require("../utils/authentication");
+const {getToken} = require("../utils/authenticate");
 
 const signup = async (req, res, next) => {
     try {
