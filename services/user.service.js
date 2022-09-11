@@ -1,44 +1,29 @@
 const {User} = require("../database/models/user.model");
 const {getToken} = require("../utils/authenticate");
+const {Role} = require("../database/models/role.model");
 
-const signup = async (req, res, next) => {
-    try {
-        let {username, firstname, lastname} = req.body;
-        username = username.trim();
-        firstname = firstname.trim();
-        lastname = lastname.trim();
-        const newUser = new User({
-            username,
-            firstname,
-            lastname,
-        });
-        await User.register(newUser, req.body.password);
+const createUser = async (user, password) => {
+    const newUser = await User.register(user, password);
 
-        res.status(200).json({
-            newUser,
-            success: true,
-        });
-    } catch (err) {
-        next(err);
-    }
+    if (!newUser) throw new Error('SIGNUP UNSUCCESSFULLY');
+
+    return newUser;
 }
 
-const login = (req, res) => {
-    const token = getToken({_id: req.user._id});
-    res.status(200).json(token);
+const getTokenNewUser = (payload) => {
+    return getToken(payload);
 }
 
-const getAllUsers = async (req, res, next) => {
-    try {
-        console.log(req.user)
-        const users = await User.find({});
-        res.status(200).json(users);
-    } catch (err) {
-        next(err);
-    }
+const getAllUsers = async (query) => {
+    const users = await User.find(query).populate('roles');
+
+    if(!users) throw new Error('GET UNSUCCESSFULLY');
+
+    return users;
+
 }
 module.exports = {
-    signup,
-    login,
+    createUser,
+    getTokenNewUser,
     getAllUsers,
 }

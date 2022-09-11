@@ -35,6 +35,7 @@ getToken = (user) => {
 };
 
 verifyAdmin = (req, res, next) => {
+    // will update to use role instead
     if(!req.user.admin) {
         res.status(403).json('Not Authorized')
     } else next();

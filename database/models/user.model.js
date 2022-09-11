@@ -10,10 +10,11 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    admin: {
-        type: Boolean,
-        default: false,
-    }
+    roles: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Role',
+    }],
+
 });
 
 //configure option for passport local mongoose
@@ -26,6 +27,4 @@ const options = {
 };
 
 userSchema.plugin(passportLocalMongoose, options);
-const UserModel = model('User', userSchema);
-
-exports.User = UserModel;
+exports.User = model('User', userSchema);

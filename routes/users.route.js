@@ -1,11 +1,11 @@
-var express = require('express');
-const {signup, login, getAllUsers} = require("../services/user.service");
+const express = require('express');
+const {signup, login, getUsers} = require("../controllers/user.controller");
 const {verifyUsernamePassword, verifyJWT, verifyAdmin} = require("../utils/authenticate");
-var userRouter = express.Router();
+const userRouter = express.Router();
 
 /* GET users listing. */
 
-userRouter.get('/', verifyJWT, verifyAdmin, getAllUsers);
+userRouter.get('/', getUsers);
 userRouter.post('/signup', signup);
 userRouter.post('/login', verifyUsernamePassword, login);
 module.exports = userRouter;
