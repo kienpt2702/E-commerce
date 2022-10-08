@@ -5,6 +5,7 @@ const {SECRET_KEY} = require("./config.util");
 const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const {ExtractJwt} = require("passport-jwt");
+const {getRolesByID} = require("../services/role.service");
 
 // options for jwt authentication
 const options = {
@@ -34,9 +35,10 @@ getToken = (user) => {
     return jwt.sign(user, SECRET_KEY, {expiresIn: 3600});
 };
 
-verifyAdmin = (req, res, next) => {
-    // will update to use role instead
-    if(!req.user.admin) {
+verifyAdmin = async (req, res, next) => {
+    const roles = await getRolesByID(req.user.roles);
+    const admin = roles.find(item => item.role === 'ADMIN');
+    if(!admin) {
         res.status(403).json('Not Authorized')
     } else next();
 }

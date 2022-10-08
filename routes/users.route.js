@@ -5,7 +5,7 @@ const userRouter = express.Router();
 
 /* GET users listing. */
 
-userRouter.get('/', getUsers);
+userRouter.get('/', verifyJWT, verifyAdmin, getUsers);
 userRouter.post('/signup', signup);
 userRouter.post('/login', verifyUsernamePassword, login);
 module.exports = userRouter;

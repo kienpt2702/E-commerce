@@ -1,7 +1,9 @@
 const {createUser, getTokenNewUser, getAllUsers} = require("../services/user.service");
 const {User} = require("../database/models/user.model");
-const {getRole} = require("../services/role.service");
-
+const {getRoleByName} = require("../services/role.service");
+const {USER, ROLE_DOES_NOT_EXIST} = require("../utils/constants.util");
+const {Role} = require("../database/models/role.model");
+const ApiError = require("../utils/ApiError");
 //  POST /users/signup
 const signup = async (req, res, next) => {
     try {
@@ -15,8 +17,12 @@ const signup = async (req, res, next) => {
             username,
             firstname,
             lastname,
+            roles: []
         });
-        const role = await getRole('ADMIN');
+
+        const role = await getRoleByName(USER);
+        if (!role) return res.status(400).json(ROLE_DOES_NOT_EXIST);
+
         userData.roles.push(role);
 
         const newUser = await createUser(userData, password);
@@ -44,7 +50,17 @@ const getUsers = async (req, res, next) => {
         const query = req.query;
 
         const users = await getAllUsers(query);
+
         res.status(200).json(users);
+    } catch (err) {
+        next(err);
+    }
+}
+
+const createRole = async (req, res, next) => {
+    try {
+        const {role} = req.body;
+
     } catch (err) {
         next(err);
     }

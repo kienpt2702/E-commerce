@@ -6,6 +6,8 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.route');
+const ApiError = require("./utils/ApiError");
+const {json} = require("express");
 
 var app = express();
 
@@ -29,13 +31,20 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  // // set locals, only providing error in development
+  // res.locals.message = err.message;
+  // res.locals.error = req.app.get('env') === 'development' ? err : {};
+  //
+  // // render the error page
+  // res.status(err.status || 500);
+  // res.render('error');
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  if(err instanceof ApiError) {
+      res.status(err.status).json(err.message);
+      return;
+  }
+
+  res.status(500).json('Something went wrong');
 });
 
 module.exports = app;
