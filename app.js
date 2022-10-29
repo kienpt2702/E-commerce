@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.route');
 const ApiError = require("./utils/ApiError");
 const {json} = require("express");
+const rolesRouter = require("./routes/roles.route");
 
 var app = express();
 
@@ -23,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
+app.use('/roles', rolesRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
@@ -39,12 +40,9 @@ app.use(function(err, req, res, next) {
   // res.status(err.status || 500);
   // res.render('error');
 
-  if(err instanceof ApiError) {
-      res.status(err.status).json(err.message);
-      return;
-  }
 
-  res.status(500).json('Something went wrong');
+  //res.status(500).json('Something went wrong');
+    res.status(err.status || 500).json(err.message || 'Something went wrong');
 });
 
 module.exports = app;
