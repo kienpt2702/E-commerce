@@ -1,11 +1,12 @@
 const {createUser, getTokenNewUser, getAllUsers} = require("../services/user.service");
 const {User} = require("../database/models/user.model");
-const {getRoleByName} = require("../services/role.service");
+const {getRoles} = require("../services/role.service");
 const {USER, ROLE_DOES_NOT_EXIST} = require("../utils/constants.util");
 const {Role} = require("../database/models/role.model");
+
 const ApiError = require("../utils/ApiError");
 //  POST /users/signup
-const signup = async (req, res, next) => {
+exports.signup = async (req, res, next) => {
     try {
         // use joi to validate input later
         let {username, firstname, lastname, password} = req.body;
@@ -20,10 +21,8 @@ const signup = async (req, res, next) => {
             roles: []
         });
 
-        const role = await getRoleByName(USER);
-        if (!role) return res.status(400).json(ROLE_DOES_NOT_EXIST);
-
-        userData.roles.push(role);
+        const existedRoles = await getRoles({name: USER});
+        userData.roles.push(existedRoles[0]);
 
         const newUser = await createUser(userData, password);
 
@@ -37,7 +36,7 @@ const signup = async (req, res, next) => {
 }
 
 // POST /users/login
-const login = (req, res) => {
+exports.login = (req, res) => {
     const payload = {_id: req.user._id}
     const token = getTokenNewUser(payload);
 
@@ -45,7 +44,7 @@ const login = (req, res) => {
 }
 
 // GET /users
-const getUsers = async (req, res, next) => {
+exports.getUsers = async (req, res, next) => {
     try {
         const query = req.query;
 
@@ -57,16 +56,10 @@ const getUsers = async (req, res, next) => {
     }
 }
 
-const createRole = async (req, res, next) => {
+exports.addRoles = async (req, res, next) => {
     try {
-        const {role} = req.body;
 
     } catch (err) {
-        next(err);
+        next(err)
     }
-}
-module.exports = {
-    signup,
-    login,
-    getUsers,
 }
