@@ -6,6 +6,8 @@ const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const {ExtractJwt} = require("passport-jwt");
 const {getRolesByID} = require("../services/role.service");
+const ApiError = require("./ApiError");
+const {UNAUTHORIZED} = require('./constants.util');
 
 // options for jwt authentication
 const options = {
@@ -36,11 +38,17 @@ getToken = (user) => {
 };
 
 verifyAdmin = async (req, res, next) => {
-    const roles = await getRolesByID(req.user.roles);
-    const admin = roles.find(item => item.role === 'ADMIN');
-    if(!admin) {
-        res.status(403).json('Not Authorized')
-    } else next();
+    try {
+        const roles = await getRolesByID(req.user.roles);
+        const admin = roles.find(item => item.role === 'ADMIN');
+
+        if(!admin) throw ApiError.unauthorized(UNAUTHORIZED);
+
+        next();
+    }
+    catch (err) {
+        next(err);
+    }
 }
 
 module.exports = {

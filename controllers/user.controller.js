@@ -1,6 +1,6 @@
 const {createUser, getTokenNewUser, getAllUsers} = require("../services/user.service");
 const {User} = require("../database/models/user.model");
-const {getRole, createOrUpdate} = require("../services/role.service");
+const {getRoles} = require("../services/role.service");
 const {USER, ROLE_DOES_NOT_EXIST} = require("../utils/constants.util");
 const {Role} = require("../database/models/role.model");
 
@@ -21,7 +21,7 @@ exports.signup = async (req, res, next) => {
             roles: []
         });
 
-        const existedRoles = await getRole({role: USER});
+        const existedRoles = await getRoles({name: USER});
         userData.roles.push(existedRoles[0]);
 
         const newUser = await createUser(userData, password);
@@ -51,18 +51,6 @@ exports.getUsers = async (req, res, next) => {
         const users = await getAllUsers(query);
 
         res.status(200).json(users);
-    } catch (err) {
-        next(err);
-    }
-}
-
-const createRole = async (req, res, next) => {
-    try {
-        const {name, ...data} = req.body;
-        const newRole = await createOrUpdate(name, data);
-        console.log(newRole)
-
-        res.status(200).json(newRole);
     } catch (err) {
         next(err);
     }
