@@ -1,5 +1,5 @@
 const {Role} = require("../database/models/role.model");
-const {ROLE_DOES_NOT_EXIST, ROLE_ALREADY_EXIST} = require("../utils/constants.util");
+const {ROLE_DOES_NOT_EXIST, UNAUTHORIZED} = require("../utils/constants.util");
 const ApiError = require("../utils/ApiError");
 
 exports.getRoles = async (filter) => {
@@ -16,17 +16,21 @@ exports.checkRole = checkRole = async (filter) => {
     return existed.length !== 0 ? existed : null;
 }
 
-exports.verifyRole = async (roles, userRoles) => {
+exports.verifyRole = async (allowedRoles, userRoles) => {
+    const roles = await getRolesByID(userRoles);
+    for(const role of roles) {
+        if(allowedRoles.includes(role.name)) return true;
+    }
 
+    throw ApiError.unauthorized(UNAUTHORIZED);
 }
 
 
 // find several roles in array ids
-exports.getRolesByID = async (ids) => {
+exports.getRolesByID = getRolesByID =  async (ids) => {
     // use to find role that have object_id in side array ids, use role:1 to filter role only without id
     // const roles = await Role.find({'_id': {$in: ids}}, {role: 1, _id: 0});
     const roles = await checkRole({'_id': {$in: ids}});
-
     if (!roles) throw ApiError.notFound(ROLE_DOES_NOT_EXIST);
 
     return roles;

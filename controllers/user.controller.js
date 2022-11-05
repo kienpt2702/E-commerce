@@ -55,3 +55,11 @@ exports.getUsers = async (req, res, next) => {
         next(err);
     }
 }
+
+exports.addRoles = async (req, res, next) => {
+    try {
+
+    } catch (err) {
+        next(err)
+    }
+}
