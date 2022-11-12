@@ -19,6 +19,7 @@ exports.getTokenNewUser = (payload) => {
 exports.getAllUsers = async (query) => {
     const users = await User.find(query).populate(['roles', 'rolesList']);
 
+
     if(!users) throw ApiError.notFound(USER_NOT_FOUND);
 
     return users;

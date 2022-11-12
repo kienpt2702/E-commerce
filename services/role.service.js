@@ -33,6 +33,7 @@ exports.verifyRole = async (allowedRoles, userRoles) => {
 
 // find several roles in array ids
 exports.getRolesByID = getRolesByID = async (ids) => {
+
     // use to find role that have object_id in side array ids, use role:1 to filter role only without id
     // const roles = await Role.find({'_id': {$in: ids}}, {role: 1, _id: 0});
     const roles = await checkRole({'_id': {$in: ids}});
@@ -51,6 +52,7 @@ exports.updateRole = async (filters, data) => {
     });
 
     if (!role) throw ApiError.notFound(ROLE_DOES_NOT_EXIST);
+
 
     return role;
 }
