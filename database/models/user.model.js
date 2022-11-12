@@ -14,12 +14,17 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Role',
     }],
+    rolesList: [{
+        type: Schema.Types.ObjectId,
+        ref: 'RoleRecord',
+    }]
 }, {
     // https://mongoosejs.com/docs/guide.html#strictQuery
     // set strictQuery to false because by default, strict option is true, meaning
     // that any attribute that does not in the schema will be striped out
     // e.g {notInSchema: true} will be striped out to {} => get will return everything
-    strictQuery: false
+    strictQuery: false,
+    timestamps: true,
 });
 
 //configure option for passport local mongoose

@@ -1,11 +1,28 @@
 const mongoose = require("mongoose");
 const {DB_URL} = require("../utils/config.util");
-module.exports = async () => {
+
+exports.initMongoDB = async () => {
     try {
         await mongoose.connect(DB_URL);
         console.log('connected to db server')
     } catch (err) {
         console.log(err)
     }
-
 }
+
+exports.runInTransaction = async (callback) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        await callback(session);
+        // commit the changes to db
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction();
+        throw err;
+    } finally {
+        await session.endSession();
+    }
+}
+

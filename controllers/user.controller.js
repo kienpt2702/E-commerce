@@ -2,9 +2,10 @@ const {createUser, getTokenNewUser, getAllUsers} = require("../services/user.ser
 const {User} = require("../database/models/user.model");
 const {getRoles} = require("../services/role.service");
 const {USER, ROLE_DOES_NOT_EXIST} = require("../utils/constants.util");
-const {Role} = require("../database/models/role.model");
+const {Role, RoleRecord} = require("../database/models/role.model");
 
 const ApiError = require("../utils/ApiError");
+const {runInTransaction} = require("../database/mongodb");
 //  POST /users/signup
 exports.signup = async (req, res, next) => {
     try {
@@ -14,22 +15,48 @@ exports.signup = async (req, res, next) => {
         firstname = firstname.trim();
         lastname = lastname.trim();
 
-        const userData = new User({
-            username,
-            firstname,
-            lastname,
-            roles: []
-        });
-
         const existedRoles = await getRoles({name: USER});
-        userData.roles.push(existedRoles[0]);
 
-        const newUser = await createUser(userData, password);
-
-        res.status(200).json({
-            newUser,
-            success: true,
+        const roleRecord = new RoleRecord({
+            roleID: existedRoles[0],
         })
+
+        await runInTransaction(async (session) => {
+            await roleRecord.save({session});
+
+            const userData = new User({
+                username,
+                firstname,
+                lastname,
+            });
+
+            userData.roles.push(existedRoles[0]);
+            userData.rolesList.push(roleRecord);
+
+            const newUser = await createUser(userData, password);
+            res.status(200).json({
+                newUser,
+                success: true,
+            })
+        });
+        // await roleRecord.save();
+        //
+        // const userData = new User({
+        //     username,
+        //     firstname,
+        //     lastname,
+        // });
+        //
+        //
+        // userData.roles.push(existedRoles[0]);
+        // userData.rolesList.push(roleRecord);
+        //
+        // const newUser = await createUser(userData, password);
+
+        // res.status(200).json({
+        //     newUser,
+        //     success: true,
+        // })
     } catch (err) {
         next(err);
     }

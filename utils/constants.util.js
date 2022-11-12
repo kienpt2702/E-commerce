@@ -8,6 +8,10 @@ const errors = {
     ROLE_ALREADY_EXIST: 'ROLE ALREADY EXIST',
     UNAUTHORIZED: 'UNAUTHORIZED',
     USER_NOT_FOUND: 'USER NOT FOUND',
-
 }
-module.exports = {...roles, ...errors};
+const status = {
+    ACTIVE: 'ACTIVE',
+    PENDING: 'PENDING',
+    INACTIVE: 'INACTIVE',
+}
+module.exports = {...roles, ...errors, ...status};
