@@ -10,6 +10,14 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    birthDate: {
+        type: Date,
+        required: true,
+    },
+    address: {
+        type: String,
+        required: true,
+    },
     roles: [{
         type: Schema.Types.ObjectId,
         ref: 'Role',

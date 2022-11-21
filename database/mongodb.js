@@ -15,9 +15,10 @@ exports.runInTransaction = async (callback) => {
     session.startTransaction();
 
     try {
-        await callback(session);
+        const res = await callback(session);
         // commit the changes to db
         await session.commitTransaction();
+        return res;
     } catch (err) {
         await session.abortTransaction();
         throw err;

@@ -1,9 +1,15 @@
 const express = require("express");
-const {createRole, getRoles, updateRole} = require("../controllers/role.controller");
+const {createRole, getRoles, updateRole, deleteRole} = require("../controllers/role.controller");
+const {validate} = require("../utils/validators/validate");
+const {updateRoleValidation, createRoleValidation} = require("../utils/validators/role.validator");
+const {verifyJWT, verifyRole} = require("../utils/authenticate");
+const {ADMIN} = require('../utils/constants.util');
+
 const rolesRouter = express.Router();
 
-rolesRouter.get('/', getRoles);
-rolesRouter.post('/', createRole);
-rolesRouter.put('/:_id', updateRole);
+rolesRouter.get('/', verifyJWT, verifyRole([ADMIN]), getRoles);
+rolesRouter.post('/', verifyJWT, verifyRole([ADMIN]), validate(createRoleValidation), createRole);
+rolesRouter.put('/:_id', verifyJWT, verifyRole([ADMIN]), validate(updateRoleValidation), updateRole);
+rolesRouter.delete('/:_id', verifyJWT, verifyRole([ADMIN]), deleteRole);
 
 module.exports = rolesRouter;

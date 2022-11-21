@@ -1,62 +1,46 @@
-const {createUser, getTokenNewUser, getAllUsers} = require("../services/user.service");
+const {
+    createUser,
+    getTokenNewUser,
+    getAllUsers,
+    deleteUser,
+    updateUser,
+    changePassword
+} = require("../services/user.service");
 const {User} = require("../database/models/user.model");
 const {getRoles} = require("../services/role.service");
-const {USER, ROLE_DOES_NOT_EXIST} = require("../utils/constants.util");
-const {Role, RoleRecord} = require("../database/models/role.model");
+const {USER, ACTIVE} = require("../utils/constants.util");
+const {RoleRecord} = require("../database/models/role.model");
 
 const ApiError = require("../utils/ApiError");
 const {runInTransaction} = require("../database/mongodb");
 //  POST /users/signup
 exports.signup = async (req, res, next) => {
     try {
-        // use joi to validate input later
-        let {username, firstname, lastname, password} = req.body;
-        username = username.trim();
-        firstname = firstname.trim();
-        lastname = lastname.trim();
-
+        const {password, ...data} = req.body;
+        Object.keys(data).forEach((property, index) => {
+            if (typeof property === 'string' || property instanceof String) {
+                data[property] = data[property].trim();
+            }
+        });
         const existedRoles = await getRoles({name: USER});
 
         const roleRecord = new RoleRecord({
             roleID: existedRoles[0],
-        })
+            status: ACTIVE,
+        });
+        const userData = new User(data);
 
-        await runInTransaction(async (session) => {
+        const newUser = await runInTransaction(async (session) => {
             await roleRecord.save({session});
-
-            const userData = new User({
-                username,
-                firstname,
-                lastname,
-            });
-
-            userData.roles.push(existedRoles[0]);
             userData.rolesList.push(roleRecord);
 
-            const newUser = await createUser(userData, password);
-            res.status(200).json({
-                newUser,
-                success: true,
-            })
+            return await createUser(userData, password);
         });
-        // await roleRecord.save();
-        //
-        // const userData = new User({
-        //     username,
-        //     firstname,
-        //     lastname,
-        // });
-        //
-        //
-        // userData.roles.push(existedRoles[0]);
-        // userData.rolesList.push(roleRecord);
-        //
-        // const newUser = await createUser(userData, password);
 
-        // res.status(200).json({
-        //     newUser,
-        //     success: true,
-        // })
+        res.status(200).json({
+            newUser,
+            success: true,
+        })
     } catch (err) {
         next(err);
     }
@@ -82,11 +66,41 @@ exports.getUsers = async (req, res, next) => {
         next(err);
     }
 }
-
-exports.addRoles = async (req, res, next) => {
+// PUT /users/_id
+exports.updateUser = async (req, res, next) => {
     try {
+        if (!req.user._id.equals(req.params._id)) {
+            next(ApiError.unauthorized('NOT ALLOWED TO UPDATE OTHER USER'));
+            return;
+        }
+
+        const updated = await updateUser(req.params._id, req.body);
+        res.status(200).json(updated);
 
     } catch (err) {
         next(err)
+    }
+}
+
+// DELETE /users/_id
+exports.deleteUser = async (req, res, next) => {
+    try {
+        const deleted = await deleteUser(req.params._id);
+
+        res.status(200).json(deleted);
+    } catch (err) {
+        next(err);
+    }
+}
+
+//POST /users/change_password
+exports.changePassword = async (req, res, next) => {
+    try {
+        const {oldPassword, newPassword} = req.body;
+
+        const newUser = await changePassword(req.user._id, oldPassword, newPassword);
+        res.status(200).json(newUser);
+    } catch (err) {
+        next(err);
     }
 }

@@ -5,7 +5,6 @@ const {SECRET_KEY} = require("./config.util");
 const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const {ExtractJwt} = require("passport-jwt");
-const {getRolesByID, verifyRole} = require("../services/role.service");
 const ApiError = require("./ApiError");
 const {ACTIVE, ADMIN} = require('./constants.util');
 
@@ -30,38 +29,41 @@ passport.use(new JwtStrategy(options, async (payload, done) => {
     return user ? done(null, user) : done(null, false);
 }));
 
-verifyUsernamePassword = (req, res, next) => {
+exports.verifyUsernamePassword = (req, res, next) => {
     passport.authenticate('local', {}, (err, user, info) => {
         if (err) return next(err);
-        if (!user) return res.status(401).json(info);
+        if (!user) return next(ApiError.unauthorized(info));
         req.user = user;
         next();
     })(req, res, next);
 };
 
-verifyJWT = passport.authenticate('jwt', {session: false});
+exports.verifyJWT = passport.authenticate('jwt', {session: false});
 
-getToken = (user) => {
+exports.getToken = (user) => {
     return jwt.sign(user, SECRET_KEY, {expiresIn: 3600});
 };
 
-verifyAdmin = async (req, res, next) => {
-    try {
-        for(const roleRecord of req.user.rolesList) {
-            if(roleRecord.status === ACTIVE && roleRecord.roleID.name === ADMIN) {
-                return next();
-            }
+const checkRole = (rolesList, allowedRoleList) => {
+    for(const roleRecord of rolesList) {
+        const {name} = roleRecord.roleID;
+        if(roleRecord.status === ACTIVE && allowedRoleList.includes(name)) {
+            return true;
         }
-        throw ApiError.unauthorized('NOT ADMIN');
     }
-    catch (err) {
-        next(err);
-    }
+
+    return false;
 }
 
-module.exports = {
-    verifyUsernamePassword,
-    getToken,
-    verifyJWT,
-    verifyAdmin,
-};
+exports.verifyRole = (allowedRoleList) => {
+    return (req, res, next) => {
+        const allowed = checkRole(req.user.rolesList, allowedRoleList);
+
+        if(!allowed) {
+            next(ApiError.unauthorized(`NOT ${allowedRoleList}`));
+        }
+        else {
+            next();
+        }
+    }
+}

@@ -7,7 +7,14 @@ const roleSchema = new Schema({
         required: true,
         unique: true
     },
-    description: String,
+    description: {
+        type: String
+    },
+    updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
+    }
 }, {
     strictQuery: false,
     timestamps: true,
@@ -33,10 +40,6 @@ const roleRecord = new Schema({
     strictQuery: false
 });
 
-const validateRole = Joi.object({
-    name: Joi.string().max(20).required(),
-    description: Joi.string().max(40).optional(),
-});
 
 const validateRoleRecord = Joi.object({
     roleID: Joi.string().required(),
@@ -46,5 +49,4 @@ const validateRoleRecord = Joi.object({
 
 exports.Role = model('Role', roleSchema);
 exports.RoleRecord = model('RoleRecord', roleRecord);
-exports.validateRole = validateRole;
 exports.validateRoleRecord = validateRoleRecord;

@@ -1,6 +1,6 @@
-const {updateRole, getRoles, checkRole, createRoles} = require("../services/role.service");
+const {updateRole, getRoles, createRoles} = require("../services/role.service");
 const ApiError = require("../utils/ApiError");
-const {ROLE_ALREADY_EXIST} = require("../utils/constants.util");
+const {INACTIVE} = require("../utils/constants.util");
 // POST /roles
 exports.createRole = async (req, res, next) => {
     try {
@@ -33,5 +33,21 @@ exports.updateRole = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+}
+// DELETE /roles/:_id
+exports.deleteRole = async (req, res, next) => {
+    try {
+        const _id = req.params._id;
+        const deletedRole = await updateRole(_id, {
+            status: INACTIVE,
+            updatedBy: req.user._id,
+        });
+
+        res.status(200).json(deletedRole);
+
+    } catch (err) {
+        next(err);
+    }
+
 }
 
