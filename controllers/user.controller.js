@@ -9,10 +9,11 @@ const {
 const {User} = require("../database/models/user.model");
 const {getRoles} = require("../services/role.service");
 const {USER, ACTIVE} = require("../utils/constants.util");
-const {RoleRecord} = require("../database/models/role.model");
+const {RoleRecord} = require("../database/models/roleRecord.model");
 
 const ApiError = require("../utils/ApiError");
 const {runInTransaction} = require("../database/mongodb");
+const {requestRoles} = require("../services/roleRecord.service");
 //  POST /users/signup
 exports.signup = async (req, res, next) => {
     try {
@@ -93,13 +94,30 @@ exports.deleteUser = async (req, res, next) => {
     }
 }
 
-//POST /users/change_password
+// GET /users/account
+exports.getMyUser = (req, res) => {
+    res.status(200).json(req.user);
+}
+
+// POST /users/account/password
 exports.changePassword = async (req, res, next) => {
     try {
         const {oldPassword, newPassword} = req.body;
 
         const newUser = await changePassword(req.user._id, oldPassword, newPassword);
         res.status(200).json(newUser);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// POST /users/account/roles
+exports.requestRoles = async (req, res, next) => {
+    try {
+        const {role, reason} = req.body;
+        // verify with jwt, req.user is loaded
+        const requested = await requestRoles(req.user, role, reason);
+        res.status(200).json(requested);
     } catch (err) {
         next(err);
     }

@@ -1,6 +1,7 @@
 const {updateRole, getRoles, createRoles} = require("../services/role.service");
 const ApiError = require("../utils/ApiError");
 const {INACTIVE} = require("../utils/constants.util");
+const {requestRoles} = require("../services/roleRecord.service");
 // POST /roles
 exports.createRole = async (req, res, next) => {
     try {
@@ -44,10 +45,8 @@ exports.deleteRole = async (req, res, next) => {
         });
 
         res.status(200).json(deletedRole);
-
     } catch (err) {
         next(err);
     }
-
 }
 

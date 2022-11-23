@@ -17,15 +17,7 @@ const options = {
 passport.use(new LocalStrategy(User.authenticate()));
 
 passport.use(new JwtStrategy(options, async (payload, done) => {
-    const user = await User.findById({_id: payload._id}).populate({
-        path: 'rolesList',
-        populate: {
-            path: 'roleID',
-            model: 'Role',
-        },
-        // match: {status: 'ACTIVE'},
-        select: ['status', 'name'],
-    });
+    const user = await User.findById({_id: payload._id});
     return user ? done(null, user) : done(null, false);
 }));
 
@@ -56,7 +48,17 @@ const checkRole = (rolesList, allowedRoleList) => {
 }
 
 exports.verifyRole = (allowedRoleList) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
+        await req.user.populate({
+            path: 'rolesList',
+            populate: {
+                path: 'roleID',
+                model: 'Role',
+                select: ['name']
+            },
+            // match: {status: 'ACTIVE'},
+            select: ['status', 'reason'],
+        });
         const allowed = checkRole(req.user.rolesList, allowedRoleList);
 
         if(!allowed) {

@@ -1,6 +1,7 @@
 const roles = {
     USER: 'USER',
     ADMIN: 'ADMIN',
+    ALL: ['USER', 'ADMIN']
 }
 
 const errors = {

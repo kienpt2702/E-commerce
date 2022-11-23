@@ -1,7 +1,7 @@
 const express = require("express");
-const {createRole, getRoles, updateRole, deleteRole} = require("../controllers/role.controller");
+const {createRole, getRoles, updateRole, deleteRole, requestRoles} = require("../controllers/role.controller");
 const {validate} = require("../utils/validators/validate");
-const {updateRoleValidation, createRoleValidation} = require("../utils/validators/role.validator");
+const {updateRoleValidation, createRoleValidation, requestRoleValidation} = require("../utils/validators/role.validator");
 const {verifyJWT, verifyRole} = require("../utils/authenticate");
 const {ADMIN} = require('../utils/constants.util');
 
