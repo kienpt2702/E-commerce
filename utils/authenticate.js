@@ -6,7 +6,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const JwtStrategy = require('passport-jwt').Strategy;
 const {ExtractJwt} = require("passport-jwt");
 const ApiError = require("./ApiError");
-const {ACTIVE, ADMIN} = require('./constants.util');
+const {ACTIVE} = require('./constants.util');
 
 // options for jwt authentication
 const options = {
@@ -39,7 +39,8 @@ exports.getToken = (user) => {
 const checkRole = (rolesList, allowedRoleList) => {
     for(const roleRecord of rolesList) {
         const {name} = roleRecord.roleID;
-        if(roleRecord.status === ACTIVE && allowedRoleList.includes(name)) {
+        // ROLE and ROLE RECORD MUST BE ACTIVE
+        if(roleRecord.roleID.status === ACTIVE && roleRecord.status === ACTIVE && allowedRoleList.includes(name)) {
             return true;
         }
     }
@@ -49,23 +50,27 @@ const checkRole = (rolesList, allowedRoleList) => {
 
 exports.verifyRole = (allowedRoleList) => {
     return async (req, res, next) => {
-        await req.user.populate({
-            path: 'rolesList',
-            populate: {
-                path: 'roleID',
-                model: 'Role',
-                select: ['name']
-            },
-            // match: {status: 'ACTIVE'},
-            select: ['status', 'reason'],
-        });
-        const allowed = checkRole(req.user.rolesList, allowedRoleList);
+        try {
+            await req.user.populate({
+                path: 'rolesList',
+                populate: {
+                    path: 'roleID',
+                    model: 'Role',
+                    select: ['name', 'status']
+                },
+                // match: {status: 'ACTIVE'},
+                select: ['status', 'reason'],
+            });
+            const allowed = checkRole(req.user.rolesList, allowedRoleList);
 
-        if(!allowed) {
-            next(ApiError.unauthorized(`NOT ${allowedRoleList}`));
-        }
-        else {
+            if(!allowed) {
+                next(ApiError.unauthorized(`NOT ${allowedRoleList}`));
+                return;
+            }
+
             next();
+        } catch (err) {
+            next(err);
         }
     }
 }

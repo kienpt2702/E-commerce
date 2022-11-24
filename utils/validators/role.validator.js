@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const {ACTIVE, PENDING, INACTIVE} = require('../constants.util');
 
 exports.createRoleValidation = Joi.object({
     name: Joi.string().max(20).required(),
@@ -6,11 +7,15 @@ exports.createRoleValidation = Joi.object({
 });
 
 exports.updateRoleValidation = Joi.object({
-    name: Joi.string().max(20).optional(),
     description: Joi.string().max(40).optional(),
 });
 
-exports.requestRoleValidation = Joi.object({
+exports.requestUserRoleValidation = Joi.object({
     role: Joi.string().hex().length(24).required(),
     reason: Joi.string().max(200).required(),
+});
+
+exports.updateUserRoleValidation = Joi.object({
+    roleRequestIDs: Joi.array().items(Joi.string().hex().length(24).required()).required(),
+    status: Joi.string().valid(ACTIVE, PENDING, INACTIVE).required(),
 });

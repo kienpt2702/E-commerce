@@ -1,5 +1,5 @@
 const {Role} = require("../database/models/role.model");
-const {ROLE_DOES_NOT_EXIST, UNAUTHORIZED} = require("../utils/constants.util");
+const {ROLE_DOES_NOT_EXIST, ACTIVE} = require("../utils/constants.util");
 const ApiError = require("../utils/ApiError");
 
 exports.getRoles = async (filter) => {
@@ -30,8 +30,12 @@ exports.updateRole = async (filters, data) => {
     return role;
 }
 
-exports.createRoles = async (data) => {
-    const role = new Role(data);
+exports.createRoles = async (data, createdBy) => {
+    const role = new Role({
+        ...data,
+        updatedBy: createdBy,
+        status: ACTIVE,
+    });
 
     return await role.save();
 }

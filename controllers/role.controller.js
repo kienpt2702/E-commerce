@@ -1,11 +1,10 @@
 const {updateRole, getRoles, createRoles} = require("../services/role.service");
-const ApiError = require("../utils/ApiError");
 const {INACTIVE} = require("../utils/constants.util");
-const {requestRoles} = require("../services/roleRecord.service");
+
 // POST /roles
 exports.createRole = async (req, res, next) => {
     try {
-        const newRole = await createRoles(req.body);
+        const newRole = await createRoles(req.body, req.user._id);
 
         res.status(201).json(newRole);
     } catch (err) {
@@ -27,8 +26,11 @@ exports.getRoles = async (req, res, next) => {
 exports.updateRole = async (req, res, next) => {
     try {
         const _id = req.params._id;
-        const data = req.body;
-        const updated = await updateRole(_id, data);
+        const data = {
+            ...req.body,
+            updatedBy: req.user._id,
+        };
+        const updated = await updateRole({_id}, data);
 
         res.status(200).json(updated);
     } catch (err) {
@@ -39,7 +41,7 @@ exports.updateRole = async (req, res, next) => {
 exports.deleteRole = async (req, res, next) => {
     try {
         const _id = req.params._id;
-        const deletedRole = await updateRole(_id, {
+        const deletedRole = await updateRole({_id}, {
             status: INACTIVE,
             updatedBy: req.user._id,
         });

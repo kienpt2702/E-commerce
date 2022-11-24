@@ -13,7 +13,7 @@ const {RoleRecord} = require("../database/models/roleRecord.model");
 
 const ApiError = require("../utils/ApiError");
 const {runInTransaction} = require("../database/mongodb");
-const {requestRoles} = require("../services/roleRecord.service");
+const {requestRoles, approveRoles} = require("../services/roleRecord.service");
 //  POST /users/signup
 exports.signup = async (req, res, next) => {
     try {
@@ -25,11 +25,14 @@ exports.signup = async (req, res, next) => {
         });
         const existedRoles = await getRoles({name: USER});
 
+        const userData = new User(data);
+
         const roleRecord = new RoleRecord({
             roleID: existedRoles[0],
             status: ACTIVE,
+            requestedBy: userData._id,
+            updatedBy: userData._id,
         });
-        const userData = new User(data);
 
         const newUser = await runInTransaction(async (session) => {
             await roleRecord.save({session});
@@ -94,9 +97,18 @@ exports.deleteUser = async (req, res, next) => {
     }
 }
 
-// GET /users/account
-exports.getMyUser = (req, res) => {
-    res.status(200).json(req.user);
+// GET /users/:_id
+exports.getUser = async (req, res, next) => {
+    try {
+        let user = req.user;
+        if(!req.user._id.equals(req.params._id)) {
+            user = (await getAllUsers({_id: req.params._id}))[0];
+        }
+
+        res.status(200).json(user);
+    } catch (err) {
+        next(err);
+    }
 }
 
 // POST /users/account/password
@@ -112,12 +124,24 @@ exports.changePassword = async (req, res, next) => {
 }
 
 // POST /users/account/roles
-exports.requestRoles = async (req, res, next) => {
+exports.requestRole = async (req, res, next) => {
     try {
         const {role, reason} = req.body;
         // verify with jwt, req.user is loaded
         const requested = await requestRoles(req.user, role, reason);
         res.status(200).json(requested);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// PUT /users/account/roles
+exports.updateUserRoles = async (req, res, next) => {
+    try {
+        const {roleRequestIDs, status} = req.body;
+        const approve = await approveRoles(roleRequestIDs, status);
+
+        res.status(200).json(approve);
     } catch (err) {
         next(err);
     }

@@ -9,6 +9,10 @@ const roleSchema = new Schema({
     description: {
         type: String
     },
+    status: {
+        type: String,
+        required: true,
+    },
     updatedBy: {
         type: Schema.Types.ObjectId,
         ref: 'User',

@@ -11,7 +11,6 @@ exports.deleteRecords = async (ids, option) => {
 }
 
 exports.requestRoles = async (user, roleID, reason = 'NULL') => {
-    console.log(user)
     for(const existed of user.rolesList) {
         if(existed.roleID._id.equals(roleID) && existed.status === ACTIVE) throw ApiError.badRequest(`REQUESTED ROLE IS ALREADY ${ACTIVE}`);
     }
@@ -43,4 +42,11 @@ exports.requestRoles = async (user, roleID, reason = 'NULL') => {
 
         return updated.value;
     });
+}
+
+exports.approveRoles = async (roleIDs, status) => {
+    const approve = await runInTransaction(session => {
+        return RoleRecord.updateMany({_id: {$in: roleIDs}}, {status}, {session});
+    });
+    return approve;
 }
